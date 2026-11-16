@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bubble Chrome</title>
+<style>
+:root{font:100% system-ui,sans-serif;color:#172c3e;background:#e8f3f4}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:14px}
+main{width:min(100%,850px);padding:clamp(18px,4vw,40px);background:white;border-radius:22px;border:1px solid #c4dbdd;border-top:7px solid #176e74;box-shadow:0 20px 55px #1c464a18}
+header p,#step{color:#225f66;font-weight:700;margin:0}
+h1{font-size:clamp(2rem,7vw,3.5rem);letter-spacing:-.045em;margin:3px 0 20px}
+h2{font-size:clamp(1.2rem,5vw,1.65rem)}
+p{line-height:1.5}
+button,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid #09383b;outline-offset:2px}
+.action{color:white;background:#14656c;border:0;border-radius:10px;font-weight:750;padding:10px 15px;min-height:45px}
+.secondary{color:#174f54;background:#e5f2f3}
+progress{width:100%;height:8px;accent-color:#176e74}
+#browser{position:relative;background:#edf2f9;border:1px solid #bbc8da;border-radius:14px;padding:7px}
+.tabs,.toolbar{display:flex;align-items:center;gap:4px}
+.tab{display:flex;min-width:0;align-items:center;background:#dde6f3;border-radius:8px 8px 0 0}
+.tab.active{background:white}
+.chrome{background:transparent;border:2px solid transparent;color:#223c58;border-radius:7px;min-width:32px;min-height:39px;padding:4px 6px;font-weight:650}
+.chrome:hover{background:#dbe9f9}
+.chrome.hint{border-color:#b86300;background:#fff1c0}
+.tab-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;max-width:122px}
+#window-close{margin-left:auto;color:#9f322b}
+.toolbar{background:white;padding:4px;border-bottom:1px solid #d3dde9}
+#address{display:flex;flex:1;min-width:0;background:#eef3fb;border-radius:20px;align-items:center;padding-left:9px}
+#address input{width:100%;min-width:0;border:0;background:transparent;color:#223c58;padding:9px 3px}
+#address.hint{outline:2px solid #b86300}
+#webpage{display:grid;place-items:center;min-height:clamp(128px,27vw,230px);text-align:center;background:#fff;color:#30526f;padding:18px}
+#webpage p{margin:0;font-size:.92rem}
+#webpage strong{display:block;margin-bottom:4px;font-size:1.3rem;color:#24425c}
+#popup{position:absolute;right:8px;top:89px;z-index:1;background:white;border:1px solid #b5c8d9;box-shadow:0 10px 27px #21384f38;padding:8px;border-radius:10px}
+#popup button{display:block;width:100%;text-align:left}
+#status{min-height:3em;margin:12px 0 6px;font-weight:650}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+</style>
+</head>
+<body><main>
+<header><p>Trámites por Internet</p><h1>Bubble Chrome</h1></header>
+<section id="intro">
+<p>Practica nueve acciones de navegación en el navegador simulado. Si te atascas, pulsa «Ver pista».</p>
+<button class="action" id="start">¡Juega!</button>
+</section>
+<section id="game" hidden>
+<p id="step"></p><progress id="progress" max="9" aria-label="Ejercicios completados"></progress>
+<h2 id="task" tabindex="-1" aria-describedby="step"></h2>
+<div id="browser" aria-label="Navegador simulado">
+<div class="tabs">
+<div class="tab active" id="first-tab"><button class="chrome tab-label" id="tab-current">Inicio</button><button class="chrome" id="close-tab" aria-label="Cerrar pestaña actual" title="Cerrar pestaña actual">×</button></div>
+<div class="tab" id="second-tab"><button class="chrome tab-label" id="other-tab">Otra pestaña</button><button class="chrome" id="close-other" aria-label="Cerrar la otra pestaña" title="Cerrar la otra pestaña">×</button></div>
+<div class="tab" id="added-tab" hidden><span class="chrome tab-label">Nueva pestaña</span></div>
+<button class="chrome" id="new-tab" aria-label="Nueva pestaña" title="Nueva pestaña">+</button>
+<button class="chrome" id="window-close" aria-label="Cerrar ventana" title="Cerrar ventana">×</button>
+</div>
+<div class="toolbar">
+<button class="chrome" id="back" aria-label="Volver atrás" title="Volver atrás">←</button>
+<button class="chrome" id="reload" aria-label="Recargar" title="Recargar">↻</button>
+<form id="address"><input id="url" aria-label="Barra de direcciones" placeholder="Escribe una dirección" value="www.ejemplo.com"><button class="chrome" aria-label="Ir a la dirección" title="Ir a la dirección">↵</button></form>
+<button class="chrome" id="star" aria-label="Añadir a marcadores" title="Añadir a marcadores">☆</button>
+<button class="chrome" id="menu" aria-label="Menú del navegador" aria-expanded="false" title="Menú del navegador">⋮</button>
+</div>
+<div id="popup" hidden>
+<button class="chrome" id="menu-tab">Nueva pestaña</button>
+<button class="chrome" id="new-window">Nueva ventana</button>
+<button class="chrome" id="save-bookmark">Guardar marcador</button>
+</div>
+<div id="webpage"><p><strong id="page-title">Página de práctica</strong><span id="page-text">Usa los controles de arriba para completar el ejercicio.</span></p></div>
+</div>
+<p id="status" role="status"></p>
+<div class="actions"><button class="action secondary" id="hint">Ver pista</button><button class="action" id="next" hidden>Siguiente ejercicio</button></div>
+</section>
+<section id="end" hidden><h2 id="result" tabindex="-1">Has completado la actividad</h2><button class="action" id="replay">Volver a jugar</button></section>
+</main>
+<script>
+const tasks = [
+  ['Abre una nueva pestaña', [['new-tab', 'Busca el botón + junto a las pestañas.']], 'Nueva pestaña abierta.'],
+  ['Abre una nueva ventana (2 pasos)', [['menu', 'Abre el menú de los tres puntos.'], ['new-window', 'Elige «Nueva ventana».']], 'Nueva ventana abierta.'],
+  ['Recarga la página', [['reload', 'Pulsa la flecha circular junto a la barra de direcciones.']], 'Página recargada.'],
+  ['Añade una página a marcadores (2 pasos)', [['star', 'Pulsa la estrella junto a la barra de direcciones.'], ['save-bookmark', 'Pulsa «Guardar marcador».']], 'Marcador guardado.'],
+  ['Introduce una URL', [['address', 'Escribe www.ejemplo.com en la barra de direcciones y pulsa Intro o ↵.']], 'Dirección abierta en el simulador.'],
+  ['Cambia de pestaña', [['other-tab', 'Pulsa el título «Otra pestaña».']], 'Has cambiado de pestaña.'],
+  ['Cierra la pestaña actual', [['close-tab', 'Pulsa la × que aparece en la pestaña «Inicio».']], 'Pestaña cerrada.'],
+  ['Cierra la ventana del navegador', [['window-close', 'Pulsa la × del extremo derecho, fuera de las pestañas.']], 'Ventana cerrada.'],
+  ['Vuelve a la página anterior', [['back', 'Pulsa la flecha que apunta a la izquierda.']], 'Has vuelto a la página anterior.']
+];
+const byId = id => document.getElementById(id);
+const controls = ['new-tab','menu','new-window','reload','star','save-bookmark','other-tab','close-tab','window-close','back','tab-current','close-other','menu-tab'];
+const status = byId('status');
+let index = 0;
+let phase = 0;
+let completed = false;
+
+function hidePopup() {
+  byId('popup').hidden = true;
+  byId('menu').setAttribute('aria-expanded', 'false');
+}
+function clearHint() {
+  for (const id of [...controls, 'address']) byId(id).classList.remove('hint');
+}
+function showTask() {
+  phase = 0;
+  completed = false;
+  clearHint();
+  hidePopup();
+  byId('browser').hidden = false;
+  byId('first-tab').hidden = false;
+  byId('first-tab').classList.add('active');
+  byId('second-tab').classList.remove('active');
+  byId('added-tab').hidden = true;
+  byId('menu-tab').hidden = false;
+  byId('new-window').hidden = false;
+  byId('save-bookmark').hidden = true;
+  byId('url').readOnly = index !== 4;
+  byId('url').value = index === 4 ? '' : 'www.ejemplo.com';
+  byId('star').textContent = '☆';
+  byId('page-title').textContent = 'Página de práctica';
+  byId('page-text').textContent = 'Usa los controles de arriba para completar el ejercicio.';
+  byId('task').textContent = tasks[index][0];
+  byId('step').textContent = `Ejercicio ${index + 1} de ${tasks.length}`;
+  byId('progress').value = index;
+  byId('next').hidden = true;
+  byId('hint').hidden = false;
+  status.textContent = '';
+  byId('task').focus();
+}
+function start() {
+  index = 0;
+  byId('intro').hidden = true;
+  byId('end').hidden = true;
+  byId('game').hidden = false;
+  showTask();
+}
+function act(id) {
+  if (completed) return;
+  const [, steps, success] = tasks[index];
+  const isNewTab = index === 0 && id === 'menu-tab';
+  if (steps[phase][0] !== id && !isNewTab) {
+    if (index === 0 && id === 'menu') {
+      byId('popup').hidden = false;
+      byId('menu').setAttribute('aria-expanded', 'true');
+      byId('menu-tab').focus();
+      return;
+    }
+    status.textContent = 'Prueba con otro control. Puedes usar la pista.';
+    return;
+  }
+  clearHint();
+  phase++;
+  if (phase < steps.length) {
+    const bookmark = id === 'star';
+    byId('popup').hidden = false;
+    byId('menu-tab').hidden = bookmark;
+    byId('new-window').hidden = bookmark;
+    byId('save-bookmark').hidden = !bookmark;
+    if (!bookmark) byId('menu').setAttribute('aria-expanded', 'true');
+    byId(bookmark ? 'save-bookmark' : 'new-window').focus();
+    status.textContent = 'Primer paso completado.';
+    return;
+  }
+  completed = true;
+  hidePopup();
+  if (id === 'save-bookmark') byId('star').textContent = '★';
+  if (id === 'window-close') byId('browser').hidden = true;
+  if (isNewTab || id === 'new-tab') {
+    byId('added-tab').hidden = false;
+    byId('added-tab').classList.add('active');
+    byId('first-tab').classList.remove('active');
+  }
+  if (id === 'close-tab' || id === 'other-tab') {
+    byId('first-tab').hidden = id === 'close-tab';
+    byId('first-tab').classList.remove('active');
+    byId('second-tab').classList.add('active');
+  }
+  if (id === 'back') byId('url').value = 'www.ejemplo.com/inicio';
+  byId('page-title').textContent = success;
+  byId('page-text').textContent = '';
+  status.textContent = '¡Correcto! ' + success;
+  byId('progress').value = index + 1;
+  byId('hint').hidden = true;
+  const next = byId('next');
+  next.textContent = index + 1 === tasks.length ? 'Terminar' : 'Siguiente ejercicio';
+  next.hidden = false;
+  next.focus();
+}
+for (const id of controls) byId(id).addEventListener('click', () => act(id));
+byId('address').addEventListener('submit', event => {
+  event.preventDefault();
+  if (completed) return;
+  if (index !== 4) { act('address'); return; }
+  const value = byId('url').value.trim();
+  if (!/^(?:https?:\/\/)?(?:[a-z\d-]+\.)+[a-z]{2,}(?:[/:?#][^\s]*)?$/i.test(value)) {
+    status.textContent = 'Escribe una dirección válida, por ejemplo www.ejemplo.com.';
+    byId('url').focus();
+    return;
+  }
+  act('address');
+});
+byId('hint').addEventListener('click', () => {
+  clearHint();
+  const [target, hint] = tasks[index][1][phase];
+  byId(target).classList.add('hint');
+  status.textContent = hint;
+});
+byId('next').addEventListener('click', () => {
+  index++;
+  if (index < tasks.length) { showTask(); return; }
+  byId('game').hidden = true;
+  byId('end').hidden = false;
+  byId('result').focus();
+});
+byId('start').addEventListener('click', start);
+byId('replay').addEventListener('click', start);
+</script>
+</body>
+</html>

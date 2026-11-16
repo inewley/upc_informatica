@@ -80,7 +80,7 @@
   </section>
   <section id="quiz" hidden>
     <p class="step" id="step"></p>
-    <progress id="progress" aria-label="Preguntas respondidas"></progress>
+    <p id="score" aria-live="polite"></p><progress id="progress" aria-label="Preguntas respondidas"></progress>
     <h2 id="question" tabindex="-1" aria-describedby="step"></h2>
     <div class="answers">
       <button id="true" type="button">Cierto</button>
@@ -92,6 +92,7 @@
   <section id="end" hidden>
     <h2 id="congrats" tabindex="-1">¡Enhorabuena!</h2>
     <p>Has terminado todas las preguntas.</p>
+    <p id="final-score"></p>
     <button id="replay" type="button">Volver a jugar</button>
   </section>
 </main>
@@ -181,7 +182,16 @@
   let round = [];
   let index = 0;
 
+  let points = 0;
+  let advanceTimer;
+
+  function showScore() {
+    document.getElementById('score').textContent = `Puntos: ${points} / ${round.length}`;
+  }
+
   function start() {
+    clearTimeout(advanceTimer);
+    points = 0;
     round = [...questions];
     for (let position = round.length - 1; position > 0; position--) {
       const other = Math.floor(Math.random() * (position + 1));
@@ -189,6 +199,7 @@
     }
     index = 0;
     progress.max = round.length;
+    showScore();
     intro.hidden = true;
     end.hidden = true;
     quiz.hidden = false;
@@ -222,6 +233,12 @@
       ? '¡Correcto!'
       : `¡Incorrecto! La respuesta es «${correctButton.textContent}».`;
     next.textContent = index + 1 === round.length ? 'Terminar' : 'Siguiente pregunta';
+    if (chosen !== expected) {
+      advanceTimer = setTimeout(advance, 2000);
+      return;
+    }
+    points++;
+    showScore();
     next.hidden = false;
     next.focus();
   }
@@ -230,16 +247,18 @@
   document.getElementById('replay').addEventListener('click', start);
   trueButton.addEventListener('click', () => answer(true));
   falseButton.addEventListener('click', () => answer(false));
-  next.addEventListener('click', () => {
+  function advance() {
     index++;
     if (index === round.length) {
       quiz.hidden = true;
       end.hidden = false;
+      document.getElementById('final-score').textContent = `Puntuación final: ${points} de ${round.length} puntos.`;
       document.getElementById('congrats').focus();
       return;
     }
     showQuestion();
-  });
+  }
+  next.addEventListener('click', advance);
 </script>
 </body>
 </html>

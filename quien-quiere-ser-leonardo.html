@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿Quién quiere ser Leonardo?</title>
+<style>
+:root{font:100% system-ui,sans-serif;color:#28244a;background:#f1edf7}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px}
+main{width:min(100%,800px);padding:clamp(24px,6vw,54px);background:#fff;border:1px solid #ded5ec;border-top:7px solid #62458e;border-radius:22px;box-shadow:0 22px 65px #3b225419}
+header p{margin:0;color:#65468a;font-weight:700}
+h1{font-size:clamp(2rem,6vw,3.7rem);line-height:1.05;letter-spacing:-.045em;margin:8px 0 26px}
+h2{font-size:clamp(1.25rem,4.5vw,1.8rem);line-height:1.35}
+p{line-height:1.55}
+button{font:inherit;font-weight:700;cursor:pointer;border:2px solid transparent;border-radius:12px;padding:12px 18px;min-height:48px;background:#583881;color:#fff}
+button:hover:enabled{filter:brightness(.93)}
+button:disabled{cursor:default}
+:focus-visible{outline:3px solid #392157;outline-offset:3px}
+#choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.option{background:#f4effa;color:#30204a;text-align:left;border-color:#dfd3ee}
+.option.correct{background:#e1f2e8;color:#174e35;border-color:#3a825d}
+.option.incorrect{background:#fcebe8;color:#842c27;border-color:#a7463d}
+progress{width:100%;height:9px;accent-color:#62458e}
+#step{font-weight:700;margin:0;color:#604575}
+#feedback{font-weight:650;min-height:1.6em}
+@media(max-width:540px){#choices{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main>
+<header><p>Trámites por Internet</p><h1>¿Quién quiere ser Leonardo?</h1></header>
+<section id="intro"><p>Elige una de las cuatro respuestas en cada pregunta.</p><button id="start">¡Juega!</button></section>
+<section id="quiz" hidden>
+<p id="step"></p><progress id="progress" aria-label="Preguntas completadas"></progress>
+<h2 id="question" tabindex="-1" aria-describedby="step"></h2>
+<div id="choices"></div><p id="feedback" role="status"></p>
+<button id="next" aria-describedby="feedback" hidden>Siguiente pregunta</button>
+</section>
+<section id="end" hidden><h2 id="result" tabindex="-1">¡Enhorabuena!</h2><p>Has terminado todas las preguntas.</p><button id="replay">Volver a jugar</button></section>
+</main>
+<script>
+const questions = [
+  [
+    "En Google Chrome, cuando marcamos una página como favorita, se añade en la barra de:",
+    [
+      "No se añade en ninguna barra",
+      "Destacadas",
+      "Preferidas",
+      "Marcadores"
+    ],
+    3
+  ],
+  [
+    "Para escribir un mensaje nuevo en Gmail, se debe hacer clic sobre:",
+    [
+      "Redactar",
+      "Responder",
+      "Escribir",
+      "El icono de un sobre"
+    ],
+    0
+  ],
+  [
+    "Una web segura, tiene al lado del buscador, dónde el link:",
+    [
+      "El icono de una llave",
+      "El icono de un candado",
+      "No hay webs seguras",
+      "El icono de un reloj"
+    ],
+    1
+  ],
+  [
+    "En Google Chrome podemos consultar las páginas visitadas anteriormente en:",
+    [
+      "Descargas",
+      "Marcadores",
+      "Historial",
+      "Nueva pestaña"
+    ],
+    2
+  ],
+  [
+    "En Gmail, se puede:",
+    [
+      "Solo recibir mensajes",
+      "Guardar notas y recordatorios",
+      "Pedir cita previa al médico",
+      "Enviar y recibir mensajes"
+    ],
+    3
+  ],
+  [
+    "En Ulabox, para ver los productos que hemos añadido, hacemos clic sobre el icono en forma de:",
+    [
+      "Carrito de la compra",
+      "Caja de transporte",
+      "Camión de transporte",
+      "Bolsa de la compra"
+    ],
+    0
+  ],
+  [
+    "En una página web como Ulabox, podemos:",
+    [
+      "Eliminar productos de la web",
+      "Comprar productos de la web",
+      "Ninguna de las anteriores",
+      "Vender productos"
+    ],
+    1
+  ],
+  [
+    "Con la herramienta banca en línea, podemos:",
+    [
+      "Comprar productos",
+      "Renovar el DNI",
+      "Consultar estado cuentas",
+      "Enviar correos electónicos"
+    ],
+    2
+  ],
+  [
+    "En Amazon podemos encontrar:",
+    [
+      "Todo tipo de productos",
+      "Sólo teléfonos móvil",
+      "No se puede comprar nada",
+      "Sólo productos alimenticios"
+    ],
+    0
+  ],
+  [
+    "Para pedir una cita previa con el médico, vamos a necesitar:",
+    [
+      "El carnet de conducir",
+      "La tarjeta sanitaria",
+      "El correo electrónico",
+      "El pasaporte"
+    ],
+    1
+  ],
+  [
+    "En Internet, relacionado con la salud, ¿qué NO podemos hacer?",
+    [
+      "Comprar productos farmacéuticos",
+      "Concertar una cita con el médico",
+      "Obtener recetas médicas",
+      "Mirar farmacias de guardia"
+    ],
+    2
+  ],
+  [
+    "Google Calendar es una herramientas que ofrece:",
+    [
+      "Información sobre alimentos",
+      "Enviar correos electrónicos",
+      "Guardar imágenes y vídeos",
+      "Personalizar calendarios"
+    ],
+    3
+  ],
+  [
+    "Chrome, Gmail, Keep, Calendar, Contacts son...",
+    [
+      "Herramientas de Google",
+      "Juegos de internet",
+      "Ninguna de las anteriores",
+      "Webs para comprar"
+    ],
+    0
+  ],
+  [
+    "Para hacer trámites administrativos habituales podemos consultar:",
+    [
+      "Ulabox",
+      "Dosfarma",
+      "Amazon",
+      "La web del ayuntamiento"
+    ],
+    3
+  ],
+  [
+    "Desde Internet, se puede pedir cita previa para (marca la respuesta que NO es correcta):",
+    [
+      "Renovar el carnet de conducir",
+      "Consulta con el médico",
+      "Ninguna de las anteriores",
+      "Renovar el DNI"
+    ],
+    2
+  ],
+  [
+    "Para poder pedir cita para renovar el DNI, debemos introducir:",
+    [
+      "Matrícula del coche",
+      "Número de identificación",
+      "Nombre y apellidos",
+      "Fecha de nacimiento"
+    ],
+    1
+  ],
+  [
+    "Google Keep (marca la respuesta que NO es correcta):",
+    [
+      "Permite crear recordatorios",
+      "No deja archivar notas",
+      "Permite adjuntar imágenes",
+      "Se puede usar en el móvil"
+    ],
+    1
+  ],
+  [
+    "Google Contacts permite el registro de:",
+    [
+      "Contactos",
+      "Posibles trámites en línea",
+      "Notas y recordatorios",
+      "Productos a comprar"
+    ],
+    3
+  ],
+  [
+    "Desde Google Contacts NO se puede:",
+    [
+      "Editar un contacto",
+      "Crear/Borrar contactos",
+      "Tener contactos favoritos",
+      "Esconder contactos secretos"
+    ],
+    0
+  ],
+  [
+    "Google Keeep es:",
+    [
+      "Una página web de música",
+      "Un supermercado en línea",
+      "Plataforma para crear notas",
+      "Un buscador de Internet"
+    ],
+    2
+  ]
+];
+const byId = id => document.getElementById(id);
+const choices = byId('choices');
+const feedback = byId('feedback');
+const next = byId('next');
+const progress = byId('progress');
+let index = 0;
+let answered = false;
+
+function start() {
+  index = 0;
+  progress.max = questions.length;
+  byId('intro').hidden = true;
+  byId('end').hidden = true;
+  byId('quiz').hidden = false;
+  showQuestion();
+}
+
+function showQuestion() {
+  answered = false;
+  const [question, options, correct] = questions[index];
+  progress.value = index;
+  byId('step').textContent = `Pregunta ${index + 1} de ${questions.length}`;
+  byId('question').textContent = question;
+  choices.replaceChildren();
+  feedback.textContent = '';
+  next.hidden = true;
+  options.forEach((label, position) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'option';
+    button.textContent = `${'ABCD'[position]}. ${label}`;
+    button.addEventListener('click', () => answer(position, correct));
+    choices.append(button);
+  });
+  byId('question').focus();
+}
+
+function answer(position, correct) {
+  if (answered) return;
+  answered = true;
+  for (const button of choices.children) button.disabled = true;
+  choices.children[correct].classList.add('correct');
+  if (position !== correct) choices.children[position].classList.add('incorrect');
+  feedback.textContent = position === correct ? '¡Correcto!' :
+    `¡Incorrecto! La respuesta es «${questions[index][1][correct]}».`;
+  progress.value = index + 1;
+  next.textContent = index + 1 === questions.length ? 'Terminar' : 'Siguiente pregunta';
+  next.hidden = false;
+  next.focus();
+}
+
+byId('start').addEventListener('click', start);
+byId('replay').addEventListener('click', start);
+next.addEventListener('click', () => {
+  index++;
+  if (index < questions.length) {
+    showQuestion();
+    return;
+  }
+  byId('quiz').hidden = true;
+  byId('end').hidden = false;
+  byId('result').focus();
+});
+</script></body></html>

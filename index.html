@@ -66,6 +66,11 @@
   #feedback { font-weight: 700; }
   #feedback:empty { margin: 0; }
   #next { margin-top: 6px; }
+#final-score {
+  font-size: clamp(1.7rem, 6vw, 3rem);
+  line-height: 1.15;
+  margin: .5em 0;
+}
 </style>
 </head>
 <body>
@@ -90,9 +95,9 @@
     <button id="next" type="button" aria-describedby="feedback" hidden>Siguiente pregunta</button>
   </section>
   <section id="end" hidden>
-    <h2 id="congrats" tabindex="-1">¡Enhorabuena!</h2>
+    <h2 id="final-score" tabindex="-1"></h2>
     <p>Has terminado todas las preguntas.</p>
-    <p id="final-score"></p>
+    
     <button id="replay" type="button">Volver a jugar</button>
   </section>
 </main>
@@ -253,7 +258,7 @@
       quiz.hidden = true;
       end.hidden = false;
       document.getElementById('final-score').textContent = `Puntuación final: ${points} de ${round.length} puntos.`;
-      document.getElementById('congrats').focus();
+      document.getElementById('final-score').focus();
       return;
     }
     showQuestion();

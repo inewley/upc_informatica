@@ -131,6 +131,7 @@ main > header h1 { margin-bottom: 0; }
 @media (prefers-reduced-motion: reduce) {
   .confetti { display: none; }
 }
+#next:disabled { opacity: .55; cursor: default; }
 </style>
 </head>
 <body>
@@ -152,12 +153,12 @@ main > header h1 { margin-bottom: 0; }
       <button id="false" type="button">Falso</button>
     </div>
     <p id="feedback" role="status"></p>
-    <button id="next" type="button" aria-describedby="feedback" hidden>Siguiente pregunta</button>
+    <button id="next" type="button" aria-describedby="feedback" disabled>Siguiente pregunta</button>
   </section>
   <section id="end" hidden>
     <h2 id="final-score" tabindex="-1"></h2>
     <p>Has terminado todas las preguntas.</p>
-    
+
     <button id="replay" type="button">Volver a jugar</button>
   </section>
 </main>
@@ -281,7 +282,8 @@ main > header h1 { margin-bottom: 0; }
       button.disabled = false;
       button.className = '';
     }
-    next.hidden = true;
+    next.disabled = true;
+    next.textContent = index + 1 === round.length ? 'Terminar' : 'Siguiente pregunta';
     feedback.textContent = '';
     question.focus();
   }
@@ -299,14 +301,14 @@ main > header h1 { margin-bottom: 0; }
     feedback.textContent = chosen === expected
       ? '¡Correcto!'
       : `¡Incorrecto! La respuesta es «${correctButton.textContent}».`;
-    next.textContent = index + 1 === round.length ? 'Terminar' : 'Siguiente pregunta';
+    next.disabled = false;
     if (chosen !== expected) {
       advanceTimer = setTimeout(advance, 2000);
       return;
     }
     points++;
     showScore();
-    next.hidden = false;
+
     next.focus();
   }
 
@@ -315,6 +317,8 @@ main > header h1 { margin-bottom: 0; }
   trueButton.addEventListener('click', () => answer(true));
   falseButton.addEventListener('click', () => answer(false));
   function advance() {
+    if (next.disabled) return;
+    clearTimeout(advanceTimer);
     index++;
     if (index === round.length) {
       quiz.hidden = true;

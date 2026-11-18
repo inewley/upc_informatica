@@ -105,6 +105,7 @@ main > header h1 { margin-bottom: 0; }
 @media (prefers-reduced-motion: reduce) {
   .confetti { display: none; }
 }
+#next:disabled { opacity: .55; cursor: default; }
 </style>
 </head>
 <body><main>
@@ -139,7 +140,7 @@ main > header h1 { margin-bottom: 0; }
 <div id="webpage"><p><strong id="page-title">Página de práctica</strong><span id="page-text">Usa los controles de arriba para completar el ejercicio.</span></p></div>
 </div>
 <p id="status" role="status"></p>
-<div class="actions"><button class="action secondary" id="hint">Ver pista</button><button class="action" id="next" hidden>Siguiente ejercicio</button></div>
+<div class="actions"><button class="action secondary" id="hint">Ver pista</button><button class="action" id="next" disabled>Siguiente ejercicio</button></div>
 </section>
 <section id="end" hidden><h2 id="final-score" tabindex="-1"></h2><button class="action" id="replay">Volver a jugar</button></section>
 </main>
@@ -190,7 +191,8 @@ function showTask() {
   byId('task').textContent = tasks[index][0];
   byId('step').textContent = `Ejercicio ${index + 1} de ${tasks.length}`;
   byId('progress').value = index;
-  byId('next').hidden = true;
+  byId('next').disabled = true;
+  byId('next').textContent = index + 1 === tasks.length ? 'Terminar' : 'Siguiente ejercicio';
   byId('hint').hidden = false;
   status.textContent = '';
   byId('task').focus();
@@ -221,6 +223,7 @@ function miss(message) {
   byId('hint').hidden = true;
   byId('progress').value = index + 1;
   status.textContent = message;
+  byId('next').disabled = false;
   advanceTimer = setTimeout(advance, 2000);
 }
 
@@ -274,8 +277,7 @@ function act(id) {
   byId('progress').value = index + 1;
   byId('hint').hidden = true;
   const next = byId('next');
-  next.textContent = index + 1 === tasks.length ? 'Terminar' : 'Siguiente ejercicio';
-  next.hidden = false;
+  next.disabled = false;
   next.focus();
 }
 for (const id of controls) byId(id).addEventListener('click', () => act(id));
@@ -298,6 +300,8 @@ byId('hint').addEventListener('click', () => {
   status.textContent = hint;
 });
 function advance() {
+  if (byId('next').disabled) return;
+  clearTimeout(advanceTimer);
   index++;
   if (index < tasks.length) { showTask(); return; }
   byId('game').hidden = true;

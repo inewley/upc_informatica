@@ -91,6 +91,7 @@ main > header h1 { margin-bottom: 0; }
 @media (prefers-reduced-motion: reduce) {
   .confetti { display: none; }
 }
+#next:disabled { opacity: .55; cursor: default; }
 </style>
 </head>
 <body><main>
@@ -100,7 +101,7 @@ main > header h1 { margin-bottom: 0; }
 <p id="step"></p><p id="score" aria-live="polite"></p><progress id="progress" aria-label="Preguntas completadas"></progress>
 <h2 id="question" tabindex="-1" aria-describedby="step"></h2>
 <div id="choices"></div><p id="feedback" role="status"></p>
-<button id="next" aria-describedby="feedback" hidden>Siguiente pregunta</button>
+<button id="next" aria-describedby="feedback" disabled>Siguiente pregunta</button>
 </section>
 <section id="end" hidden><h2 id="final-score" tabindex="-1"></h2><p>Has terminado todas las preguntas.</p><button id="replay">Volver a jugar</button></section>
 </main>
@@ -344,7 +345,8 @@ function showQuestion() {
   byId('question').textContent = question;
   choices.replaceChildren();
   feedback.textContent = '';
-  next.hidden = true;
+  next.disabled = true;
+  next.textContent = index + 1 === questions.length ? 'Terminar' : 'Siguiente pregunta';
   options.forEach((label, position) => {
     const button = document.createElement('button');
     button.type = 'button';
@@ -365,20 +367,22 @@ function answer(position, correct) {
   feedback.textContent = position === correct ? '¡Correcto!' :
     `¡Incorrecto! La respuesta es «${questions[index][1][correct]}».`;
   progress.value = index + 1;
-  next.textContent = index + 1 === questions.length ? 'Terminar' : 'Siguiente pregunta';
+  next.disabled = false;
   if (position !== correct) {
     advanceTimer = setTimeout(advance, 2000);
     return;
   }
   points++;
   showScore();
-  next.hidden = false;
+
   next.focus();
 }
 
 byId('start').addEventListener('click', start);
 byId('replay').addEventListener('click', start);
 function advance() {
+  if (next.disabled) return;
+  clearTimeout(advanceTimer);
   index++;
   if (index < questions.length) {
     showQuestion();
